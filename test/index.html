@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>arcgis-toc Test</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.22/esri/css/esri.css">
+    <style>
+        #map {
+            height: 400px;
+        }
+        #basemapToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div id="map">
+        <div id="basemapToggle"></div>
+    </div>
+    <div id="targetID">
+        I get replaced.
+    </div>
+    <div id="toc"></div>
+    
+    
+    
+    <script>
+        var dojoConfig = {
+            packages: [{
+                name: "arcgis-toc",
+                location: location.pathname.replace(/\/[^/]+$/, "") + "../src"
+            }]
+        };
+    </script>
+    <script src="https://js.arcgis.com/3.22/"></script>
+    <script src="app.js"></script>
+</body>
+</html>
