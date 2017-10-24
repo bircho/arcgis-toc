@@ -1,37 +1,48 @@
-/// <reference path="../node_modules/@types/arcgis-js-api/index.d.ts"/>
-/// <reference path="../node_modules/@types/dojo/index.d.ts"/>
-/// <reference path="../node_modules/@types/dojo/dijit.d.ts"/>
+/// <reference types="dojo/dijit"/>
 
-import esri = require("esri");
+// import * as Color from 'dojo/_base/Color';
+// var teste = new Color([]);
+// import * as number from 'dojo/number';
+// number.format(123.123, {});
+// import * as Color from 'esri/Color';
+// var c = new Color();
+// c.setColor('sdfa');
+
 import Map = require('esri/map');
-import basemap = require('esri/basemaps');
+import Layer = require('esri/layers/layer');
 
+import basemap = require('esri/basemaps');
 import declare = require('dojo/_base/declare');
 import ContentPane = require('dijit/layout/ContentPane');
 
-export = Toc;
+//import template = require('dojo/text!main.html');
+
+
 
 interface TocOptions {
+    showGraphicLayers?:boolean,
+    showBasemap?:boolean,
     map: Map
 }
 
 class Toc extends ContentPane {
     map:Map;
+    baseClass = 'arcgis-toc';
 
-    constructor(params:TocOptions, srcNodeRef?) {
+    constructor(params:TocOptions, srcNodeRef?/*:HTMLElement|string*/) {
+        super(params, srcNodeRef);
         if (!params || !params.map) {
             throw new Error('Map parameter missing! Check widget configuration.');
         }
 
-        super(params, srcNodeRef);
-
         this.map = params.map;
         this._installMapBindings();
 
-        // if (this.map.loaded) {
-        // } else {
-        //     this.map.on('load', this.onMapLoad);
-        // }
+        if (this.map.loaded) {
+            console.log('map alread loaded.');
+        } else {
+            this.map.on('load', () => console.log('map finished loading.'));
+        }
     }
 
     // destroy() {
@@ -39,34 +50,91 @@ class Toc extends ContentPane {
     //     this.inherited(arguments);
     // }
 
-    _installMapBindings() {
+    private _installMapBindings() {
         var handles = [
-            this.map.on('basemap-change', this.onBasemapChange),
-            this.map.on('layer-add', this.onLayerAdd),
-            this.map.on('layer-add-result', this.onLayerAddResult),
-            this.map.on('layer-remove', this.onLayerRemove),
-            this.map.on('layer-reorder', this.onLayerReorder),
-            this.map.on('layer-resume', this.onLayerResume),
-            this.map.on('layer-suspend', this.onLayerSuspend),
-            this.map.on('layers-add-result', this.onLayersAddResult), // TODO: really necessary?
-            this.map.on('layers-removed', this.onLayersRemoved),
-            this.map.on('layers-reordered', this.onLayersReordered),
-            this.map.on('zoom-end', this.onZoomEnd)
+            this.map.on('basemap-change', this.onBasemapChange.bind(this)),
+            this.map.on('layer-add', this.onLayerAdd.bind(this)),
+            this.map.on('layer-add-result', this.onLayerAddResult.bind(this)),
+            this.map.on('layer-remove', this.onLayerRemove.bind(this)),
+            this.map.on('layer-reorder', this.onLayerReorder.bind(this)),
+            this.map.on('layer-resume', this.onLayerResume.bind(this)),
+            this.map.on('layer-suspend', this.onLayerSuspend.bind(this)),
+            this.map.on('layers-add-result', this.onLayersAddResult.bind(this)),
+            this.map.on('layers-removed', this.onLayersRemoved.bind(this)),
+            this.map.on('layers-reordered', this.onLayersReordered.bind(this)),
+            this.map.on('zoom-end', this.onZoomEnd.bind(this))
         ];
         this.own(...handles);
     }
 
-    onBasemapChange(event) { console.log('basemap-change', event); }
-    onLayerAdd(event) { console.log('layer-add', event); }
-    onLayerAddResult(event) { console.log('layer-add-result', event); }
-    onLayerRemove(event) { console.log('layer-remove', event); }
-    onLayerReorder(event) { console.log('layer-reorder', event); }
-    onLayerResume(event) { console.log('layer-resume', event); }
-    onLayerSuspend(event) { console.log('layer-suspend', event); }
-    onLayersAddResult(event) { console.log('layers-add-result', event); }
-    onLayersRemoved(event) { console.log('layers-removed', event); }
-    onLayersReordered(event) { console.log('layers-reordered', event); }
-    onZoomEnd(event) { console.log('zoom-end:', event); }
+    onBasemapChange(event) { console.log('map: basemap-change', event); }
+    onLayerAdd(event) {
+        console.log('map: layer-add', event, this.parseLayer(event.layer));
+    }
+    onLayerAddResult(event) {
+        console.log('map: layer-add-result', event, this.parseLayer(event.layer));
+    }
+    onLayerRemove(event) {
+        console.log('map: layer-remove', event, this.parseLayer(event.layer));
+    }
+    onLayerReorder(event) {
+        console.log('map: layer-reorder', event, this.parseLayer(event.layer));
+    }
+    onLayerResume(event) {
+        console.log('map: layer-resume', event, this.parseLayer(event.layer));
+    }
+    onLayerSuspend(event) {
+        console.log('map: layer-suspend', event, this.parseLayer(event.layer));
+    }
+    onLayersAddResult(event) {
+        console.log('map: layers-add-result', event);
+        event.layers.forEach(({ layer, error }) => {
+            if (!error) {
+                console.log(this.parseLayer(layer));
+            } else {
+                console.error(error);
+            }
+        });
+    }
+    onLayersRemoved(event) {
+        console.log('map: layers-removed', event);
+    }
+    onLayersReordered(event) {
+        console.log('map: layers-reordered', event);
+    }
+    onZoomEnd(event) {
+        console.log('map: zoom-end', event);
+    }
+
+    private _installLayerBindings(layer:Layer) {
+        if ((layer as any)._arcgis_toc) {
+            return;
+        }
+        (layer as any)._arcgis_toc = true;
+
+        // TODO: another Layer types have another events: see KMLLayer.on('network-link-error'), etc
+        var handles = [
+            layer.on('error', this.onLayerError),
+            layer.on('load', this.createLayerObserver('load')),
+            layer.on('opacity-change', this.createLayerObserver('opacity-change')),
+            layer.on('refresh-interval-change', this.createLayerObserver('refresh-interval-change')),
+            layer.on('resume', this.createLayerObserver('resume')),
+            layer.on('scale-range-change', this.createLayerObserver('scale-range-change')),
+            layer.on('scale-visibility-change', this.createLayerObserver('scale-visibility-change')),
+            layer.on('suspend', this.createLayerObserver('suspend')),
+            layer.on('visibility-change', this.createLayerObserver('visibility-change')),
+            layer.on('update-start', this.createLayerObserver('update-start')),
+            layer.on('update-end', this.createLayerObserver('update-end'))
+        ];
+        this.own(...handles); //FIXME: remove bindings on layer removal, not just on destroy().
+    }
+
+    onLayerError({error, target}) { console.log('layer-error', target.id, target); }
+    createLayerObserver (type:string) {
+        return function (event) {
+            console.log('layer-', event.target.id, event);
+        }.bind(this);
+    }
 
     listLayers () {
         let basemapId = this.map.getBasemap();
@@ -76,23 +144,62 @@ class Toc extends ContentPane {
         let basemapLayerIds = this.map.basemapLayerIds;
         let layerIds = this.map.layerIds.filter(id => basemapLayerIds.indexOf(id) == -1);
         let graphicsLayerIds = this.map.graphicsLayerIds.filter(id => basemapLayerIds.indexOf(id) == -1);
+
+        let content = '';
         
-        graphicsLayerIds.forEach(id => {
+        graphicsLayerIds.map(id => {
             let layer = this.map.getLayer(id);
-            console.log('# ' + layer.id);
+            console.log('# ' + layer.id, this.parseLayer(layer));
         });
-        layerIds.forEach(id => {
+        layerIds.map(id => {
             let layer = this.map.getLayer(id);
-            console.log('- ' + layer.id);
+            console.log('- ' + layer.id, this.parseLayer(layer));
         });
         if (basemapTitle) {
             console.log('Basemap:' + basemapTitle);
             basemapLayerIds.forEach(id => {
                 let layer = this.map.getLayer(id);
-                console.log('  - ' + layer.id);
+                console.log('  - ' + layer.id, this.parseLayer(layer));
             });
         } else {
             console.log('No basemap.');
         }
+
+        this.set('content', content);
+    }
+
+    parseLayer(layer:Layer):Object {
+        let id = layer.id;
+        let loaded = layer.loaded;
+        let secure = !!layer.credential;
+        let error = layer.loadError;
+        let suspended = layer.suspended;
+        let visible = layer.visible;
+        let visibleAtMapScale = layer.visibleAtMapScale;
+        let opacity = layer.opacity;
+        let refreshInterval = layer.refreshInterval;
+
+        let data = { id, loaded, secure, error, suspended, visible, visibleAtMapScale, opacity, refreshInterval };
+
+        // Controls
+        // layer.hide();
+        // layer.show();
+        // layer.setOpacity();
+        // layer.setVisibility();
+        // layer.setRefreshInterval();
+
+        let type = (layer as any).declaredClass;
+
+        switch(type) {
+            case 'esri.layers.ArcGISTiledMapServiceLayer':
+                //layer.layerInfo;
+                break;
+            default:
+                break;
+        }
+
+        return data;
     }
 }
+
+export = Toc;

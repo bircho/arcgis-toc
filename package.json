@@ -4,6 +4,8 @@
   "description": "A Table of Content (TOC) and Legend combo widget for ArcGIS Javascript API.",
   "main": "index.js",
   "scripts": {
+    "build": "webpack",
+    "dev": "webpack-dev-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,7 +26,11 @@
   },
   "homepage": "https://github.com/lucasn/arcgis-toc#readme",
   "devDependencies": {
+    "@types/arcgis-js-api": "^3.22.0",
     "@types/dojo": "^1.9.40",
-    "@types/arcgis-js-api": "^3.22.0"
+    "awesome-typescript-loader": "^3.2.3",
+    "source-map-loader": "^0.2.2",
+    "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.3"
   }
 }
