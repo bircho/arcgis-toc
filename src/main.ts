@@ -1,23 +1,17 @@
 /// <reference types="dojo/dijit"/>
 
-// import * as Color from 'dojo/_base/Color';
-// var teste = new Color([]);
-// import * as number from 'dojo/number';
-// number.format(123.123, {});
-// import * as Color from 'esri/Color';
-// var c = new Color();
-// c.setColor('sdfa');
-
 import Map = require('esri/map');
 import Layer = require('esri/layers/layer');
 
 import basemap = require('esri/basemaps');
 import declare = require('dojo/_base/declare');
 import ContentPane = require('dijit/layout/ContentPane');
+import WidgetBase = require('dijit/_WidgetBase');
+import TemplatedMixin = require('dijit/_TemplatedMixin');
 
-//import template = require('dojo/text!main.html');
-
-
+// import i18n = require('dojo/i18n!./nls/main');
+// import serviceTemplate = require('dojo/text!./templates/service.html');
+// import template = require('dojo/text!main.html');
 
 interface TocOptions {
     showGraphicLayers?:boolean,
@@ -25,12 +19,34 @@ interface TocOptions {
     map: Map
 }
 
-class Toc extends ContentPane {
-    map:Map;
-    baseClass = 'arcgis-toc';
+let ServiceNode = declare('service-node', [WidgetBase, TemplatedMixin], {
+    templatePath: '../src/main.html', //FIXME: use templateString
+    //templateString: '<div class="${baseClass}" data-dojo-attach-point="focusNode" data-dojo-attach-event="click:_onClick" role="menuitem" tabindex="-1"><span data-dojo-attach-point="containerNode"></span></div>',
 
-    constructor(params:TocOptions, srcNodeRef?/*:HTMLElement|string*/) {
-        super(params, srcNodeRef);
+    constructor(params, srcNodeRef?:HTMLElement|string) {
+        params = params || {};
+        //TODO: finish testing.
+        this.layer = params.layer;
+        this.name = params.layer.id;
+    },
+
+    postCreate () {
+        this.labelNode.innerText = this.name;
+        console.log('got layer:', this.layer);
+    },
+
+    _onCheckboxClick(event) { console.log('checkbox', event.target.checked, event); },
+    _onExpandClick(event) { console.log('expand', event); }
+});
+
+export = declare('arcgis-toc-declare', [WidgetBase/*, TemplatedMixin*/], {
+    map:Map,
+    baseClass: 'arcgis-toc-class',
+    
+    _onClick() { console.log('clicou.'); },
+
+    constructor(params:TocOptions, srcNodeRef?:HTMLElement|string) {
+        //super(params, srcNodeRef);
         if (!params || !params.map) {
             throw new Error('Map parameter missing! Check widget configuration.');
         }
@@ -43,14 +59,14 @@ class Toc extends ContentPane {
         } else {
             this.map.on('load', () => console.log('map finished loading.'));
         }
-    }
+    },
 
-    // destroy() {
-    //     console.log('destroy!');
-    //     this.inherited(arguments);
-    // }
+    destroy() {
+        console.log('destroy!');
+        this.inherited(arguments);
+    },
 
-    private _installMapBindings() {
+    _installMapBindings() {
         var handles = [
             this.map.on('basemap-change', this.onBasemapChange.bind(this)),
             this.map.on('layer-add', this.onLayerAdd.bind(this)),
@@ -65,48 +81,55 @@ class Toc extends ContentPane {
             this.map.on('zoom-end', this.onZoomEnd.bind(this))
         ];
         this.own(...handles);
-    }
+    },
 
-    onBasemapChange(event) { console.log('map: basemap-change', event); }
+    onBasemapChange(event) { console.log('map: basemap-change', event); },
     onLayerAdd(event) {
         console.log('map: layer-add', event, this.parseLayer(event.layer));
-    }
+        this._installLayerBindings(event.layer);
+    },
     onLayerAddResult(event) {
         console.log('map: layer-add-result', event, this.parseLayer(event.layer));
-    }
+        this._installLayerBindings(event.layer);
+    },
     onLayerRemove(event) {
         console.log('map: layer-remove', event, this.parseLayer(event.layer));
-    }
+        //this._installLayerBindings(event.layer);
+    },
     onLayerReorder(event) {
         console.log('map: layer-reorder', event, this.parseLayer(event.layer));
-    }
+        this._installLayerBindings(event.layer);
+    },
     onLayerResume(event) {
         console.log('map: layer-resume', event, this.parseLayer(event.layer));
-    }
+        this._installLayerBindings(event.layer);
+    },
     onLayerSuspend(event) {
         console.log('map: layer-suspend', event, this.parseLayer(event.layer));
-    }
+        this._installLayerBindings(event.layer);
+    },
     onLayersAddResult(event) {
         console.log('map: layers-add-result', event);
         event.layers.forEach(({ layer, error }) => {
             if (!error) {
                 console.log(this.parseLayer(layer));
+                this._installLayerBindings(layer);
             } else {
                 console.error(error);
             }
         });
-    }
+    },
     onLayersRemoved(event) {
         console.log('map: layers-removed', event);
-    }
+    },
     onLayersReordered(event) {
         console.log('map: layers-reordered', event);
-    }
+    },
     onZoomEnd(event) {
         console.log('map: zoom-end', event);
-    }
+    },
 
-    private _installLayerBindings(layer:Layer) {
+    _installLayerBindings(layer:Layer) {
         if ((layer as any)._arcgis_toc) {
             return;
         }
@@ -127,14 +150,14 @@ class Toc extends ContentPane {
             layer.on('update-end', this.createLayerObserver('update-end'))
         ];
         this.own(...handles); //FIXME: remove bindings on layer removal, not just on destroy().
-    }
+    },
 
-    onLayerError({error, target}) { console.log('layer-error', target.id, target); }
+    onLayerError({error, target}) { console.log('layer-error', target.id, target); },
     createLayerObserver (type:string) {
         return function (event) {
-            console.log('layer-', event.target.id, event);
+            console.log('layer-'+type, event.target.id, event);
         }.bind(this);
-    }
+    },
 
     listLayers () {
         let basemapId = this.map.getBasemap();
@@ -150,23 +173,31 @@ class Toc extends ContentPane {
         graphicsLayerIds.map(id => {
             let layer = this.map.getLayer(id);
             console.log('# ' + layer.id, this.parseLayer(layer));
+            this.doLayer(layer);
         });
         layerIds.map(id => {
             let layer = this.map.getLayer(id);
             console.log('- ' + layer.id, this.parseLayer(layer));
+            this.doLayer(layer);
         });
         if (basemapTitle) {
             console.log('Basemap:' + basemapTitle);
             basemapLayerIds.forEach(id => {
                 let layer = this.map.getLayer(id);
                 console.log('  - ' + layer.id, this.parseLayer(layer));
+                this.doLayer(layer);
             });
         } else {
             console.log('No basemap.');
         }
 
         this.set('content', content);
-    }
+    },
+
+    doLayer(layer:Layer) {
+        let node = new ServiceNode({ layer });
+        node.placeAt(this.domNode);
+    },
 
     parseLayer(layer:Layer):Object {
         let id = layer.id;
@@ -200,6 +231,4 @@ class Toc extends ContentPane {
 
         return data;
     }
-}
-
-export = Toc;
+});

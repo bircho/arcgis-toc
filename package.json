@@ -3,14 +3,10 @@
   "version": "0.1.0",
   "description": "A Table of Content (TOC) and Legend combo widget for ArcGIS Javascript API.",
   "main": "index.js",
-  "scripts": {
-    "build": "webpack",
-    "dev": "webpack-dev-server",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lucasn/arcgis-toc.git"
+    "url": "git+https://github.com/bircho/arcgis-toc.git"
   },
   "keywords": [
     "esri",
@@ -22,15 +18,11 @@
   "author": "Edson Lucas Nascimento",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/lucasn/arcgis-toc/issues"
+    "url": "https://github.com/bircho/arcgis-toc/issues"
   },
-  "homepage": "https://github.com/lucasn/arcgis-toc#readme",
+  "homepage": "https://github.com/bircho/arcgis-toc#readme",
   "devDependencies": {
     "@types/arcgis-js-api": "^3.22.0",
-    "@types/dojo": "^1.9.40",
-    "awesome-typescript-loader": "^3.2.3",
-    "source-map-loader": "^0.2.2",
-    "webpack": "^3.8.1",
-    "webpack-dev-server": "^2.9.3"
+    "@types/dojo": "^1.9.40"
   }
 }
