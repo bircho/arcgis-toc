@@ -2,7 +2,9 @@
     <div class="${baseClass}__row">
         <span class="${baseClass}__checkbox">
               <!-- data-dojo-attach-event="onclick:_onCheckboxClick"> -->
-            <input type="checkbox" data-dojo-attach-event="onchange:_onCheckboxClick"/>
+            <input type="checkbox"
+                data-dojo-attach-point="checkbox"
+                data-dojo-attach-event="onchange:_onCheckboxChange"/>
         </span>
         <span class="${baseClass}__expand"
               data-dojo-attach-event="onclick:_onExpandClick"> + </span>
@@ -12,13 +14,5 @@
         </span>
     </div>
     <div data-dojo-attach-point="containerNode"></div>
-    <!-- <div class="agsjsTOCNode">' +
-        '<div data-dojo-attach-point="rowNode" data-dojo-attach-event="onclick:_onClick">' +
-        '<span data-dojo-attach-point="contentNode" class="agsjsTOCContent">' +
-        '<span data-dojo-attach-point="checkContainerNode"></span>' +
-        '<img src="${_blankGif}" alt="" data-dojo-attach-point="iconNode" />' +
-        '<span data-dojo-attach-point="labelNode">' +
-        '</span></span></div>' +
-        '<div data-dojo-attach-point="containerNode" style="display: none;"> </div></div>', -->
 </div>
 

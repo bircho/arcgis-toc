@@ -3,6 +3,7 @@
         "watch": true,
         "module": "amd",
         "removeComments": true,
+        // "noImplicitAny": true, // TODO: this.map and other objects need type information.
         "sourceMap": true
     },
     "include": [

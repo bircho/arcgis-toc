@@ -8,10 +8,14 @@ require([
     "esri/layers/ArcGISImageServiceLayer",
     "esri/layers/ImageServiceParameters",
 
+    "esri/layers/ArcGISDynamicMapServiceLayer",
+
+    "esri/layers/GraphicsLayer",
+
     "esri/layers/KMLLayer",
 
     "dojo/domReady!"
-], function(Map, Toc, BasemapToggle, ArcGISImageServiceLayer, ImageServiceParameters, KMLLayer) {
+], function(Map, Toc, BasemapToggle, ArcGISImageServiceLayer, ImageServiceParameters, ArcGISDynamicMapServiceLayer, GraphicsLayer, KMLLayer) {
     map = new Map("map", {
         center: [-39, -13],
         zoom: 1,
@@ -27,6 +31,17 @@ require([
 
     toc = new Toc({ map: map, content: 'empty' }, 'toc');
     toc.startup();
+
+    var graphicsLayer = new GraphicsLayer({
+        id: 'graphics layer'
+    });
+    map.addLayer(graphicsLayer);
+    
+
+    var dynamicLayer = new ArcGISDynamicMapServiceLayer('http://domain.invalid', {
+        id: 'failed'
+    });
+    map.addLayer(dynamicLayer);
 
     // var kmlUrl = "https://esri.box.com/shared/static/nr6tol9ln8vng0szqlaqx5kmd9wf6bb6.kml";
     // var kml = new KMLLayer(kmlUrl, {

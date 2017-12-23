@@ -5,24 +5,42 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>arcgis-toc Example App</title>
-    <link rel="stylesheet" href="https://js.arcgis.com/3.22/esri/css/esri.css">
+    <!-- <link rel="stylesheet" href="https://js.arcgis.com/3.22/esri/css/esri.css"> -->
+    <link rel="stylesheet" href="https://js.arcgis.com/3.23/esri/themes/calcite/dijit/calcite.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.23/esri/themes/calcite/esri/esri.css">
     <style>
-        #map {
-            height: 400px;
-        }
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+         }
         #basemapToggle {
             position: absolute;
             top: 20px;
             right: 20px;
             z-index: 999;
         }
+        #toc {
+            position: absolute;
+            height: 300px;
+            left: 20px;
+            margin: 5px;
+            padding: 10px;
+            top: 110px;
+            width: 300px;
+            z-index: 40;
+            box-shadow: 0 0 5px #888;
+            background-color: white;
+      }
     </style>
 </head>
-<body>
+<body class="calcite">
     <div id="map">
         <div id="basemapToggle"></div>
+        <div id="toc"></div>
     </div>
-    <div id="toc"></div>
+    
     
     
     
